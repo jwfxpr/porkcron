@@ -27,14 +27,17 @@ Take a look at the `.env.example` file.
 It contains all the environment variables used by `porkcron`.
 Rename it to `.env` and fill it with the values you got earlier.
 
-| Name             | Description                         | Required | Default                         |
-|------------------|-------------------------------------|:--------:|---------------------------------|
-| DOMAIN           | your Porkbun domain                 | yes      | -                               |
-| API_KEY          | your Porkbun API key                | yes      | -                               |
-| SECRET_KEY       | your Porkbun API secret key         | yes      | -                               |
-| API_URL          | the Porkbun API address             | no       | https://porkbun.com/api/json/v3 |
-| CERTIFICATE_PATH | the path to save the certificate to | no       | /etc/porkcron/certificate.pem   |
-| PRIVATE_KEY_PATH | the path to save the private key to | no       | /etc/porkcron/private_key.pem   |
+| Name                 | Description                                  | Required | Default                         |
+|----------------------|----------------------------------------------|:--------:|---------------------------------|
+| DOMAIN               | your Porkbun domain                          | yes      | -                               |
+| API_KEY              | your Porkbun API key                         | yes      | -                               |
+| SECRET_KEY           | your Porkbun API secret key                  | yes      | -                               |
+| API_URL              | the Porkbun API address                      | no       | https://porkbun.com/api/json/v3 |
+| CERTIFICATE_PATH     | the path to save the certificate to          | no       | /etc/porkcron/certificate.pem   |
+| PRIVATE_KEY_PATH     | the path to save the private key to          | no       | /etc/porkcron/private_key.pem   |
+| PKCS12_PASSWORD      | Setting a password will enable PKCS12 export | no       | -                               |
+| PKCS12_FRIENDLY_NAME | PKCS12 friendly name.                        | no       | porkcron                        |
+| PKCS12_PATH          | The path to save the PKCS12 blob to.         | no       | /etc/porkcron/pkcs12.p12        |
 
 Now you need to choose the installation method.
 
