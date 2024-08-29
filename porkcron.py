@@ -4,10 +4,10 @@ import json
 import logging
 import os
 import sys
-from cryptography import x509
-from cryptography.hazmat.primitives.serialization import \
-    BestAvailableEncryption, load_pem_private_key, pkcs12
 from urllib import request
+
+from cryptography import x509
+from cryptography.hazmat.primitives.serialization import PrivateFormat, load_pem_private_key, pkcs12
 
 # https://porkbun.com/api/json/v3/documentation
 DEFAULT_API_URL = "https://porkbun.com/api/json/v3"
@@ -57,9 +57,17 @@ def main() -> None:
         cert = x509.load_pem_x509_certificate(
             data["certificatechain"].encode())
         key = load_pem_private_key(data["privatekey"].encode(), None)
+        encryption_algorithm = (
+            PrivateFormat.PKCS12.encryption_builder()
+            .key_cert_algorithm(pkcs12.PBES.PBESv2SHA256AndAES256CBC)
+            .build(pkcs12_password.encode())
+        )
         p12 = pkcs12.serialize_key_and_certificates(
-            friendly_name.encode(), key, cert, None,
-            BestAvailableEncryption(pkcs12_password.encode())
+            friendly_name.encode(),
+            key,  # type: ignore
+            cert,
+            None,
+            encryption_algorithm,
         )
         logging.info(f"saving PKCS #12 blob to {pkcs12_path}")
         with open(pkcs12_path, "wb") as f:
