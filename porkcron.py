@@ -4,16 +4,22 @@ import json
 import logging
 import os
 import sys
+from cryptography import x509
+from cryptography.hazmat.primitives.serialization import \
+    BestAvailableEncryption, load_pem_private_key, pkcs12
 from urllib import request
 
 # https://porkbun.com/api/json/v3/documentation
 DEFAULT_API_URL = "https://porkbun.com/api/json/v3"
 DEFAULT_CERTIFICATE_PATH = "/etc/porkcron/certificate.crt"
 DEFAULT_PRIVATE_KEY_PATH = "/etc/porkcron/private_key.key"
+DEFAULT_PKCS12_PATH = "/etc/porkcron/pkcs12.p12"
+DEFAULT_PKCS12_FRIENDLY_NAME = "porkcron"
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s [%(levelname)s] %(message)s")
     logging.info("running SSL certificate renewal script")
 
     domain = getenv_or_exit("DOMAIN")
@@ -42,6 +48,22 @@ def main() -> None:
     logging.info(f"saving private key to {private_key_path}")
     with open(private_key_path, "w") as f:
         f.write(data["privatekey"])
+
+    pkcs12_password = os.getenv("PKCS12_PASSWORD")
+    if pkcs12_password is not None:
+        pkcs12_path = os.getenv("PKCS12_PATH", DEFAULT_PKCS12_PATH)
+        friendly_name = os.getenv(
+            "PKCS12_FRIENDLY_NAME", DEFAULT_PKCS12_FRIENDLY_NAME)
+        cert = x509.load_pem_x509_certificate(
+            data["certificatechain"].encode())
+        key = load_pem_private_key(data["privatekey"].encode(), None)
+        p12 = pkcs12.serialize_key_and_certificates(
+            friendly_name.encode(), key, cert, None,
+            BestAvailableEncryption(pkcs12_password.encode())
+        )
+        logging.info(f"saving PKCS #12 blob to {pkcs12_path}")
+        with open(pkcs12_path, "wb") as f:
+            f.write(p12)
 
     logging.info("SSL certificate has been successfully renewed")
 
